@@ -1,67 +1,69 @@
-import Link from 'next/link'
-import Image from 'next/image'
+import Link from "next/link";
+import Image from "next/image";
 
-import { formatDate } from '@/lib/utils'
-import MDXContent from '@/components/MdxContent'
-import { ArrowLeftIcon } from 'lucide-react'
-import { getProjectBySlug, getProjects } from '@/lib/projects'
-import { notFound } from 'next/navigation'
+import { formatDate } from "@/lib/utils";
+import MDXContent from "@/components/MdxContent";
+import { ArrowLeftIcon } from "lucide-react";
+import { getProjectBySlug, getProjects } from "@/lib/projects";
+import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
-  const projects = await getProjects()
-  const slugs = projects.map(project => ({ slug: project.slug }))
+  const projects = await getProjects();
+  const slugs = projects.map((project) => ({ slug: project.slug }));
 
-  return slugs
+  return slugs;
 }
 
 export default async function Project({
-  params
+  params,
 }: {
-  params: { slug: string }
+  params: { slug: string };
 }) {
-  const { slug } = params
-  const project = await getProjectBySlug(slug)
+  const { slug } = params;
+  const project = await getProjectBySlug(slug);
 
   if (!project) {
-    notFound()
+    notFound();
   }
 
-  const { metadata, content } = project
-  const { title, image, author, publishedAt } = metadata
+  const { metadata, content } = project;
+  const { title, image, author, publishedAt, link: projectLink } = metadata;
 
   return (
-    <section className='pb-24 pt-32'>
-      <div className='container max-w-3xl'>
+    <section className="pb-24 pt-32">
+      <div className="container max-w-3xl">
         <Link
-          href='/projects'
-          className='mb-8 inline-flex items-center gap-2 text-sm font-light text-muted-foreground transition-colors hover:text-foreground'
+          href="/projects"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-light text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeftIcon className='h-5 w-5' />
+          <ArrowLeftIcon className="h-5 w-5" />
           <span>Back to projects</span>
         </Link>
 
         {image && (
-          <div className='relative mb-6 h-96 w-full overflow-hidden rounded-lg'>
-            <Image
-              src={image}
-              alt={title || ''}
-              className='object-cover'
-              fill
-            />
-          </div>
+          <Link href={projectLink || ""}>
+            <div className="relative mb-6 h-96 w-full overflow-hidden rounded-lg">
+              <Image
+                src={image}
+                alt={title || ""}
+                className="object-cover"
+                fill
+              />
+            </div>
+          </Link>
         )}
 
         <header>
-          <h1 className='title'>{title}</h1>
-          <p className='mt-3 text-xs text-muted-foreground'>
-            {author} / {formatDate(publishedAt ?? '')}
+          <h1 className="title">{title}</h1>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {author} / {formatDate(publishedAt ?? "")}
           </p>
         </header>
 
-        <main className='prose mt-16 dark:prose-invert'>
+        <main className="prose mt-16 dark:prose-invert">
           <MDXContent source={content} />
         </main>
       </div>
     </section>
-  )
+  );
 }
